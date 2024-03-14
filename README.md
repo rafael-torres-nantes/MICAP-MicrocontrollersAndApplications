@@ -10,5 +10,5 @@ sudo apt update
 | Applications| 
 | --- |
 | `Config Wizard` |
-| `SDCC` 
+| `SDCC` |
 | `IDE Silabs 5.18` | 
