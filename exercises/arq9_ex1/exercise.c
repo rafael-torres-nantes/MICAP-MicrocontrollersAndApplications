@@ -78,7 +78,8 @@ void Ini_LCDan(void){
 }
 
 
-void putchar(char c) {
+void putchar(char c) 
+{
 	if(c == '\t') { // Top
 		esc_LCDan(0x80, BY, CO);
 	}
