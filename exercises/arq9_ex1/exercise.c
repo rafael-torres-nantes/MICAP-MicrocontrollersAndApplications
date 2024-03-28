@@ -80,10 +80,10 @@ void Ini_LCDan(void){
 
 void putchar(char c) 
 {
-	if(c == '\t') { // Top
+	if(c == '\a') { // Top line
 		esc_LCDan(0x80, BY, CO);
 	}
-	else if (c == '\b') { // Button
+	else if (c == '\b') { // Bottom line
 		esc_LCDan(0xC0, BY, CO);
 	}
 	else {
@@ -101,6 +101,6 @@ void main(void) {
 	SFRPAGE=LEGACY_PAGE;
 	Ini_LCDan();
 
-	printf_fast_f("\tABC \b%f %d", floatVar, intVar);
+	printf_fast_f("\aABC \b%f %d", floatVar, intVar);
 	while(1);
 }
