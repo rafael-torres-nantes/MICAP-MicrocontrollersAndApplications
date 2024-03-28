@@ -13,6 +13,14 @@ void Reset_Sources_Init()
     WDTCN     = 0xAD;
 }
 
+void Timer_Init()
+{
+    SFRPAGE   = TIMER01_PAGE;
+    CKCON     = 0x03;
+    SFRPAGE   = TMR2_PAGE;
+    TMR2CF    = 0x10;
+}
+
 void Port_IO_Init()
 {
     // P0.0  -  Unassigned,  Push-Pull,  Digital
@@ -71,6 +79,7 @@ void Oscillator_Init()
 void Init_Device(void)
 {
     Reset_Sources_Init();
+    Timer_Init();
     Port_IO_Init();
     Oscillator_Init();
 }
