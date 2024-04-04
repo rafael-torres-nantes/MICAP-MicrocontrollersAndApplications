@@ -119,20 +119,34 @@ void conf_pag(unsigned char pag, __bit cs){
 	esc_glcd(pag,CO,cs);
 }
 
-void limpa_glcd(__bit cs){
-	unsigned char i, j;
-	
-	for(i = 0; i < 8; i++){
-		conf_pag(i, cs);
-		conf_Y(0, cs);
-		for(j=0; j < 64; j++)
-			esc_glcd(0x00 , DA, cs);
-	}
-}
 
 void main(void){
 
 	Init_Device();
 	SFRPAGE=LEGACY_PAGE;
+
+	Ini_glcd();
+	limpa_glcd(ESQ);
+	limpa_glcd(DIR);
+	conf_pag(0,ESQ);
+	conf_Y(0,ESQ);
+	esc_glcd(0x7E,DA,0);
+	esc_glcd(0x11,DA,0);
+	esc_glcd(0x11,DA,0);
+	esc_glcd(0x11,DA,0);
+	esc_glcd(0x7E,DA,0);
+
+	esc_glcd(0x00,DA,0);
+	esc_glcd(0x00,DA,0);
+	esc_glcd(0x00,DA,0);
+
+	esc_glcd(0x7F,DA,0);
+	esc_glcd(0x49,DA,0);
+	esc_glcd(0x49,DA,0);
+	esc_glcd(0x49,DA,0);
+	esc_glcd(0x49,DA,0);
+	esc_glcd(0x36,DA,0);
+
+	while(1);
 
 }

@@ -2,7 +2,7 @@
 #include "def_pinos.h"
 #include "config.c"
 #include "stdio.h"
-
+#include "fonte.c"
 
 #define CS1 P2_0
 #define CS2 P2_1
@@ -21,8 +21,6 @@
 #define NOP12() NOP8(); NOP4()
 #define lig 1
 #define des 0
-
-
 
 void delay_ms(unsigned int t){
 	TMOD|=0x01;
@@ -87,6 +85,21 @@ void esc_glcd(unsigned char byte,__bit cd,__bit cs){
 		NOP12();
 }
 
+void esc_fonte(unsigned char indexFonte, __bit cd,__bit cs){
+	unsigned char i;
+	for(;i<5; i++){
+		esc_glcd(fonte[indexFonte][i],cd,cs);
+
+	}
+
+
+}
+
+void espaco(){
+	esc_glcd(0x00,DA,0);
+	esc_glcd(0x00,DA,0);
+	esc_glcd(0x00,DA,0);
+}
 void Ini_glcd(void){
 	E = 0;
 	RST = 1;
@@ -121,18 +134,38 @@ void conf_pag(unsigned char pag, __bit cs){
 
 void limpa_glcd(__bit cs){
 	unsigned char i, j;
-	
-	for(i = 0; i < 8; i++){
-		conf_pag(i, cs);
-		conf_Y(0, cs);
-		for(j=0; j < 64; j++)
-			esc_glcd(0x00 , DA, cs);
+	for(i=0;i<8;i++){
+		conf_pag(i,cs);
+		conf_Y(0,cs);
+		for(j=0;j<64;j++)
+			esc_glcd(0x00,DA,cs);
 	}
 }
 
 void main(void){
-
+unsigned char i = 0;
 	Init_Device();
 	SFRPAGE=LEGACY_PAGE;
 
+	Ini_glcd();
+	limpa_glcd(ESQ);
+	limpa_glcd(DIR);
+	conf_pag(0,ESQ);
+	conf_Y(0,ESQ);
+	esc_fonte(2,DA,0);
+    espaco();
+	esc_fonte(2,DA,0);
+    espaco();
+
+
+  while(1);
 }
+
+
+
+
+
+
+
+
+

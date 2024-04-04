@@ -2,7 +2,7 @@
 #include "def_pinos.h"
 #include "config.c"
 #include "stdio.h"
-
+#include "fonte.c"
 
 #define CS1 P2_0
 #define CS2 P2_1
@@ -21,8 +21,6 @@
 #define NOP12() NOP8(); NOP4()
 #define lig 1
 #define des 0
-
-
 
 void delay_ms(unsigned int t){
 	TMOD|=0x01;
@@ -87,6 +85,20 @@ void esc_glcd(unsigned char byte,__bit cd,__bit cs){
 		NOP12();
 }
 
+
+void espacamento_glcd(unsigned char e, __bit cs){
+	unsigned char i = 0;
+	for(;i<e;i++)
+		esc_glcd(0x00,DA,cs);
+}
+
+void glcd_caracter(unsigned int indexFonte, __bit cs){
+	unsigned char i = 0;
+	for(;i<5;i++)
+		esc_glcd(fonte[indexFonte][i],DA,cs);
+}
+
+
 void Ini_glcd(void){
 	E = 0;
 	RST = 1;
@@ -121,18 +133,47 @@ void conf_pag(unsigned char pag, __bit cs){
 
 void limpa_glcd(__bit cs){
 	unsigned char i, j;
-	
-	for(i = 0; i < 8; i++){
-		conf_pag(i, cs);
-		conf_Y(0, cs);
-		for(j=0; j < 64; j++)
-			esc_glcd(0x00 , DA, cs);
+	for(i=0;i<8;i++){
+		conf_pag(i,cs);
+		conf_Y(0,cs);
+		for(j=0;j<64;j++)
+			esc_glcd(0x00,DA,cs);
+	}
+}
+
+void putchar(char c){
+	static int cont;
+	__bit aux;
+	unsigned int i = 0;
+	if(c < 9){
+		conf_pag(c-1,ESQ);
+		conf_Y(0,ESQ);
+		conf_pag(c-1,DIR);
+		conf_Y(0,DIR);
+		cont=0;
+	}
+	else{
+		if (cont < 8)
+			aux = ESQ;
+		else
+			aux = DIR;
+		for(;i<5;i++)
+			esc_glcd(fonte[c-32][i],DA,aux);
+		espacamento_glcd(3,aux);
+		cont++;
 	}
 }
 
 void main(void){
-
+	unsigned char i = 0;
 	Init_Device();
 	SFRPAGE=LEGACY_PAGE;
+	Ini_glcd();
+	limpa_glcd(ESQ);
+	limpa_glcd(DIR);
+	printf_fast_f("\x01Guilherme");
+	printf_fast_f("\x02& Rafael Torres");
 
+
+	while(1);
 }
