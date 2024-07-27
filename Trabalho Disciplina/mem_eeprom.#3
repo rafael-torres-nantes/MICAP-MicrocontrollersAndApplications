@@ -1,0 +1,119 @@
+#define GLCD_ESQ 0
+#define GLCD_DIR 1
+#define GLCD_CO 0
+#define GLCD_DA 1
+#define GLCD_CS1 P2_0
+#define GLCD_CS2 P2_1
+#define GLCD_RST P2_5
+#define GLCD_RS P2_2
+#define GLCD_RW P2_3
+#define GLCD_ENABLE P2_4
+#define GLCD_DB P4
+
+#define TRIG P0_1
+
+#define CS P2_3 // Para ser usado na MEM
+
+volatile unsigned int count_global = 0;
+volatile unsigned int var_test_EEPROM;
+#define R 1
+#define W 0
+
+int esc_eeprom(unsigned char slave_addr, unsigned char end, unsigned char dado) {
+	unsigned char ret;
+	ret = esc_byte_cntr(slave_addr, W);
+	if(ret!=0) return(-(int)ret);
+	ret=esc_byte_dado(end);
+	if(ret!=0) return (-(int)ret);
+	ret = esc_byte_dado(dado);
+	if(ret!=0) return (-(int)ret);
+	STO = 1; // Gera stop
+	SI = 0;
+	while(STO == 1);
+	while(1){
+		ret=esc_byte_cntr(slave_addr, W); // Ack pol.
+		if(ret==0)break;
+		if(ret!=0x20) return(-(int)ret);
+		}
+	return(0);
+}
+
+int le_eeprom(unsigned char end_disp, unsigned char end){
+
+	unsigned char dado, ret;
+
+	ret = esc_byte_cntr(end_disp, W);
+
+	if(ret != 0) return (-(int) ret);
+
+	ret = esc_byte_dado(end);
+
+	if(ret != 0) return (-(int) ret);
+
+	ret = esc_byte_cntr(end_disp, R);
+
+	if(ret != 0) return (-(int) ret);
+
+	AA=0; //Configura MCU para gerar NACK ap?s rec. byte
+	SI=0;
+	while(SI==0); // Aguarda receber byte da EEPROM
+
+	if(SMB0STA != 0x58) return (-(int) SMB0STA);
+
+	dado = SMB0DAT;
+
+	STO = 1; // Gera stop
+	SI = 0;
+	while(STO == 1);
+
+	return dado;
+}
+
+// Barramento I2C - Fim
+void teste_EEPROM() {
+  unsigned char endereco_eeprom = 0x01;
+  unsigned char valor = 0;
+  unsigned char valor_lido = 0;
+  unsigned int error = 0;
+  unsigned int i = 0;
+
+
+  valor = (unsigned char)le_eeprom(0xA1, endereco_eeprom);
+  i = (valor) % 256;
+  // Loop de contagem
+  while (i < 256) {
+    // Leitura do valor inicial da EEPROM
+	valor = (unsigned char)le_eeprom(0xA1, endereco_eeprom);
+    // Exibição do valor atual
+    printf_fast_f("\x02" "Valor: %u   ", valor);
+
+    // Atraso de 50ms
+    delay_ms(500);
+
+    // Incremento do valor
+    i++;
+	//i = (i + 1) % 256;
+
+    // Escrita do valor na EEPROM
+	valor = (i) % 128;
+    esc_eeprom(0xA0, endereco_eeprom, valor);
+
+    // Leitura do valor da EEPROM para verificar se a escrita foi bem sucedida
+    valor_lido = (unsigned char)le_eeprom(0xA1, endereco_eeprom);
+
+    // Verificação de erro
+    if (valor != valor_lido) {
+      error = 1;
+//      break;
+    }
+  }
+  esc_eeprom(0xA0, endereco_eeprom, 0);
+
+
+  // Verificação de erro
+  if (error) {
+    printf_fast_f("\x03" "ERRO: %u", valor_lido);
+  } else {
+    printf_fast_f("\x04" "Fim da contagem");
+  }
+}
